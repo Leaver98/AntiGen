@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AntiGen — بنك امتحانات الوراثة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f4f6f9;
+  --surface:  #ffffff;
+  --border:   #e2e6ed;
+  --primary:  #1e3a5f;
+  --primary-light: #2c5282;
+  --accent:   #2b6cb0;
+  --accent-soft: #ebf4ff;
+  --text:     #1a202c;
+  --text-sub: #4a5568;
+  --text-muted: #718096;
+  --success:  #276749;
+  --success-bg: #f0fff4;
+  --success-border: #9ae6b4;
+  --error:    #9b2c2c;
+  --error-bg: #fff5f5;
+  --error-border: #feb2b2;
+  --info-bg:  #ebf8ff;
+  --info-border: #90cdf4;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow:   0 4px 12px rgba(0,0,0,0.08);
+  --radius:   10px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--primary);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+.topbar-brand .logo-icon {
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.topbar-brand .platform-name { color: #fff; }
+.topbar-brand .platform-sub { color: rgba(255,255,255,0.55); font-weight: 400; font-size: 0.8rem; margin-right: 0.2rem; }
+.topbar-right { color: rgba(255,255,255,0.6); font-size: 0.82rem; }
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── CONTAINER ── */
+.container { max-width: 1050px; margin: 0 auto; padding: 2rem 1.5rem; }
+.container-sm { max-width: 520px; margin: 0 auto; padding: 2rem 1.5rem; }
+.container-md { max-width: 720px; margin: 0 auto; padding: 1.5rem 1.5rem; }
+
+/* ── HERO ── */
+.hero {
+  background: var(--primary);
+  color: #fff;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  border-bottom: 3px solid var(--accent);
+}
+.hero h1 {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.01em;
+}
+.hero p { color: rgba(255,255,255,0.65); font-size: 0.92rem; }
+.hero-meta {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+.hero-stat { text-align: center; }
+.hero-stat .n { font-size: 1.6rem; font-weight: 700; color: #fff; }
+.hero-stat .l { font-size: 0.78rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.1rem; }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-header h2 { font-size: 1rem; font-weight: 600; color: var(--text); }
+.week-pill {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid #bee3f8;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.7rem;
+}
+
+/* ── WEEKS LAYOUT ── */
+.weeks-wrapper { display: flex; flex-direction: column; gap: 2.5rem; }
+
+.week-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.week-block-header {
+  background: #f7fafc;
+  padding: 0.9rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.week-num-badge {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.week-block-title { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+.week-block-sub { font-size: 0.82rem; color: var(--text-muted); margin-right: auto; }
+
+.exam-table { width: 100%; border-collapse: collapse; }
+.exam-table tr { border-bottom: 1px solid var(--border); transition: background 0.15s; cursor: pointer; }
+.exam-table tr:last-child { border-bottom: none; }
+.exam-table tr:hover { background: var(--accent-soft); }
+.exam-table td { padding: 0.85rem 1.4rem; font-size: 0.92rem; }
+.exam-table td:first-child { color: var(--text); font-weight: 500; }
+.exam-table td:last-child { text-align: left; width: 120px; }
+.exam-q-count { color: var(--text-muted); font-size: 0.82rem; }
+.btn-take {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid #bee3f8;
+  border-radius: 6px;
+  padding: 0.35rem 0.9rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-take:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── REGISTRATION ── */
+.reg-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+.reg-card h2 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.3rem; }
+.reg-card .sub { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem; }
+.exam-badge-box {
+  background: #f7fafc;
+  border: 1px solid var(--border);
+  border-right: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.5rem;
+}
+.exam-badge-box .label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+.exam-badge-box .value { font-size: 0.95rem; color: var(--text); font-weight: 600; margin-top: 0.15rem; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  margin-bottom: 0.4rem;
+}
+.form-group input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.form-group input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(43,108,176,0.1);
+}
+.form-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.35rem; }
+.btn-primary {
+  width: 100%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.3rem;
+}
+.btn-primary:hover { background: var(--primary-light); }
+.btn-ghost {
+  width: 100%;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 0.6rem;
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── BACK LINK ── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  font-family: 'Cairo', sans-serif;
+  margin-bottom: 1.2rem;
+}
+.back-link:hover { color: var(--accent); }
+
+/* ── EXAM HEADER BAR ── */
+.exam-topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 56px;
+  z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+.exam-topbar-info { display: flex; flex-direction: column; gap: 0.1rem; }
+.exam-topbar-title { font-size: 0.88rem; font-weight: 600; color: var(--primary); }
+.exam-topbar-student { font-size: 0.8rem; color: var(--text-muted); }
+.progress-section { display: flex; align-items: center; gap: 0.8rem; flex: 1; max-width: 300px; }
+.progress-track {
+  flex: 1;
+  height: 5px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+.progress-label { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; font-weight: 600; }
+
+/* ── QUESTION CARD ── */
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.8rem;
+  margin-bottom: 1rem;
+}
+.q-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.q-num {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 6px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.q-type-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+.tag-choice { background: #e6fffa; color: #276749; border: 1px solid #9ae6b4; }
+.tag-fill   { background: #fffbeb; color: #744210; border: 1px solid #f6e05e; }
+.tag-essay  { background: var(--accent-soft); color: var(--accent); border: 1px solid #bee3f8; }
+
+.q-text {
+  font-size: 1rem;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.8;
+  margin-bottom: 1.3rem;
+}
+
+/* OPTIONS */
+.options-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.opt-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-align: right;
+  transition: all 0.15s;
+}
+.opt-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.opt-btn.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--primary); }
+.opt-btn.correct  { border-color: #48bb78; background: var(--success-bg); color: var(--success); }
+.opt-btn.wrong    { border-color: #fc8181; background: var(--error-bg); color: var(--error); }
+.opt-letter {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* FILL / ESSAY */
+.fill-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 0.6rem;
+}
+.fill-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+.essay-area {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: #fff;
+  min-height: 120px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  line-height: 1.8;
+}
+.essay-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+
+/* FEEDBACK */
+.feedback {
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  display: none;
+  margin-top: 1rem;
+}
+.feedback.show { display: block; }
+.feedback.fb-correct { background: var(--success-bg); border: 1px solid var(--success-border); color: var(--success); }
+.feedback.fb-wrong   { background: var(--error-bg);   border: 1px solid var(--error-border);   color: var(--error); }
+.feedback.fb-info    { background: var(--info-bg);     border: 1px solid var(--info-border);     color: #2c5282; }
+.feedback-title { font-weight: 700; margin-bottom: 0.3rem; }
+
+/* ACTION BAR */
+.action-bar {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}
+.btn-check {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1.8rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-check:hover { background: var(--primary-light); }
+.btn-check:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-next {
+  background: #fff;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  padding: 0.65rem 1.8rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: none;
+}
+.btn-next:hover { background: var(--accent); color: #fff; }
+
+/* ── RESULT ── */
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+.result-score-ring {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) calc(var(--pct)*1%), var(--border) 0%);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.2rem;
+  position: relative;
+}
+.result-score-ring::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  background: var(--surface);
+  border-radius: 50%;
+}
+.score-text {
+  position: relative;
+  z-index: 1;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.result-grade { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 0.3rem; }
+.result-name  { font-size: 1rem; color: var(--text-sub); margin-bottom: 0.3rem; }
+.result-msg   { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 2rem; }
+.result-stats {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.rs-item {
+  flex: 1;
+  padding: 1rem 0.5rem;
+  border-left: 1px solid var(--border);
+}
+.rs-item:last-child { border-left: none; }
+.rs-item .n { font-size: 1.5rem; font-weight: 700; }
+.rs-item .l { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.c-color { color: #276749; }
+.w-color { color: #9b2c2c; }
+.t-color { color: var(--primary); }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .exam-topbar { top: 56px; }
+  .q-card { padding: 1.2rem; }
+  .q-text { font-size: 0.95rem; }
+  .hero-meta { gap: 1.2rem; }
+  .action-bar { justify-content: stretch; }
+  .btn-check, .btn-next { flex: 1; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="logo-icon">🧬</div>
+    <span class="platform-name">AntiGen</span>
+    <span class="platform-sub">/ بنك الامتحانات</span>
+  </div>
+  <div class="topbar-right">ملزمة "السهل الممتنع" — الأستاذ سالم المنصور</div>
+</div>
+
+<!-- ══════════════ HOME ══════════════ -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <h1>بنك امتحانات الوراثة</h1>
+    <p>أسئلة وزارية — الأسبوع الأول حتى الخامس</p>
+    <div class="hero-meta">
+      <div class="hero-stat"><div class="n">19</div><div class="l">امتحان</div></div>
+      <div class="hero-stat"><div class="n">95</div><div class="l">سؤال</div></div>
+      <div class="hero-stat"><div class="n">5</div><div class="l">أسابيع</div></div>
+      <div class="hero-stat"><div class="n">3</div><div class="l">أنماط</div></div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="weeks-wrapper" id="weeks-wrapper"></div>
+  </div>
+</div>
+
+<!-- ══════════════ REGISTER ══════════════ -->
+<div id="page-register" class="page">
+  <div class="container-sm">
+    <button class="back-link" onclick="showHome()">→ العودة إلى القائمة الرئيسية</button>
+    <div class="reg-card">
+      <h2>تسجيل الطالب</h2>
+      <p class="sub">يُرجى إدخال الاسم الثلاثي الكامل للمتابعة</p>
+      <div class="exam-badge-box">
+        <div class="label">الامتحان المحدد</div>
+        <div class="value" id="reg-title">—</div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.2rem" id="reg-sub">—</div>
+      </div>
+      <div class="form-group">
+        <label>الاسم الثلاثي</label>
+        <input type="text" id="name-input" placeholder="الاسم الأول — اسم الأب — اسم الجد" maxlength="70"
+          onkeydown="if(event.key==='Enter') startExam()">
+        <div class="form-note">مثال: أحمد محمد علي</div>
+      </div>
+      <button class="btn-primary" onclick="startExam()">بدء الامتحان</button>
+      <button class="btn-ghost" onclick="showHome()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ EXAM ══════════════ -->
+<div id="page-exam" class="page">
+  <div class="exam-topbar">
+    <div class="exam-topbar-info">
+      <div class="exam-topbar-title" id="et-title">—</div>
+      <div class="exam-topbar-student">الطالب: <strong id="et-student">—</strong></div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="progress-label" id="prog-label">0 / 5</div>
+    </div>
+  </div>
+  <div class="container-md">
+    <div id="q-area"></div>
+    <div class="action-bar">
+      <button class="btn-check" id="btn-check" onclick="checkAnswer()">تحقق من الإجابة</button>
+      <button class="btn-next"  id="btn-next"  onclick="nextQ()">السؤال التالي</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ RESULT ══════════════ -->
+<div id="page-result" class="page">
+  <div class="container-sm">
+    <div class="result-card">
+      <div class="result-score-ring" id="score-ring">
+        <span class="score-text" id="score-pct">0%</span>
+      </div>
+      <div class="result-grade" id="res-grade">—</div>
+      <div class="result-name" id="res-name">—</div>
+      <div class="result-msg"  id="res-msg">—</div>
+      <div class="result-stats">
+        <div class="rs-item"><div class="n c-color" id="r-c">0</div><div class="l">صحيح</div></div>
+        <div class="rs-item"><div class="n w-color" id="r-w">0</div><div class="l">خطأ / غير مكتمل</div></div>
+        <div class="rs-item"><div class="n t-color" id="r-t">0</div><div class="l">المجموع</div></div>
+      </div>
+      <button class="btn-primary" onclick="showHome()" style="margin-top:0">العودة إلى الرئيسية</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//   EXAM DATA — exact questions as provided
+// ══════════════════════════════════════════════════════
+const EXAMS = [
+  /* ─── WEEK 1 ─── */
+  {
+    week:1, weekTitle:'الأسبوع الأول', weekSub:'أساسيات الوراثة',
+    title:'أساسيات الوراثة — اليوم الأول',
+    questions:[
+      {type:'choice',
+       q:'العالم الذي اختار نبات البزاليا لتجاربه الوراثية هو:',
+       opts:['دي فريز','كورنز','مندل'], ans:2},
+      {type:'choice',
+       q:'السنة التي تم فيها إعادة اكتشاف تجارب مندل هي:',
+       opts:['1866','1900','1953'], ans:1},
+      {type:'fill',
+       q:'من شروط نجاح الباحث في علم الوراثة اختيار نموذج يمتلك دورة حياة ___________ وإمكانية إنتاج ___________ كبيرة.'},
+      {type:'essay', q:'علل (وزاري): اختيار مندل لنبات البزاليا في تجاربه الوراثية؟ (اذكر 3 أسباب).'},
+      {type:'essay', q:'ما هي المجالات الرئيسية التي يهتم بها علم الوراثة؟'}
+    ]
+  },
+  {
+    week:1, weekTitle:'الأسبوع الأول', weekSub:'أساسيات الوراثة',
+    title:'أساسيات الوراثة — اليوم الثاني',
+    questions:[
+      {type:'choice',
+       q:'الصفة التي تظهر في جميع أفراد الجيل الأول عند تضريب نقيين متضادين تسمى:',
+       opts:['سائدة','متنحية','هجينة'], ans:0},
+      {type:'choice',
+       q:'يرمز للصفة السائدة الهجينة بحرفين:',
+       opts:['كالهما كبير','كالهما صغير','كبير وصغير'], ans:2},
+      {type:'fill',
+       q:'الطراز ___________ يعكس التركيب الجيني للفرد، بينما الطراز ___________ يعكس الصفات المشاهدة.'},
+      {type:'essay', q:'عرف (وزاري): المورثات (الجينات)، الأليل (البديل).'},
+      {type:'essay', q:'ما الفرق بين الصفة السائدة النقية والصفة السائدة الهجينة من حيث النسل الناتج عند التلقيح الذاتي؟'}
+    ]
+  },
+  {
+    week:1, weekTitle:'الأسبوع الأول', weekSub:'أساسيات الوراثة',
+    title:'أساسيات الوراثة — اليوم الثالث',
+    questions:[
+      {type:'choice',
+       q:'الكروموسومات تتكون أساساً من:',
+       opts:['أ- بروتينات فقط','DNA وبروتين','فقط RNA'], ans:1},
+      {type:'choice',
+       q:'عدد أزواج الكروموسومات الجسمية في ذبابة الفاكهة هو:',
+       opts:['3 أزواج','4 أزواج','23 زوجاً'], ans:0},
+      {type:'fill',
+       q:'في حالة تضريب فردين سائدين هجينين (Aa x Aa) تكون النسبة المظهرية المتوقعة هي _________.'},
+      {type:'essay', q:'كيف استطاع مندل الحفاظ على نقاوة السلالات (منع التلقيح الخلطي) قبل بدء تجاربه؟'},
+      {type:'essay', q:'اذكر الطراز الوراثي والمظهري لكل من: نبات بزاليا قصير الساق، ونبات بزاليا طويل الساق نقي.'}
+    ]
+  },
+  {
+    week:1, weekTitle:'الأسبوع الأول', weekSub:'أساسيات الوراثة',
+    title:'أساسيات الوراثة — اليوم الرابع',
+    questions:[
+      {type:'choice',
+       q:'في الانقسام الاختزالي، تنفصل الأليلات المزدوجة لتكوين:',
+       opts:['الأمشاج','الزيجة','الأنسجة'], ans:0},
+      {type:'choice',
+       q:'الفرد الذي طرازه الوراثي (bb) ينتج أمشاجاً بنسبة:',
+       opts:['100% نوع واحد','50% لنوعين','25% لأربعة أنواع'], ans:0},
+      {type:'fill',
+       q:'إذا كان الطراز الوراثي للفرد (Aa)، فإنه ينتج نوعين من الأمشاج هما _______ و _______.'},
+      {type:'essay', q:'اشرح قاعدة "الانعزال" وكيف تطبق عند استخراج الأمشاج؟'},
+      {type:'essay', q:'استخرج الأمشاج للطرز الوراثية التالية مع التوضيح: TT , Tt , tt'}
+    ]
+  },
+  {
+    week:1, weekTitle:'الأسبوع الأول', weekSub:'أساسيات الوراثة',
+    title:'مراجعة شاملة — مسائل',
+    questions:[
+      {type:'choice',
+       q:'مربع بونيت هو رسم هندسي يشبه رقعة الشطرنج توضع في يساره وعلى شكل عمودي الأمشاج:',
+       opts:['الذكرية','الأنثوية','الجسدية'], ans:0},
+      {type:'choice',
+       q:'الصفة المتنحية في الوراثة المندلية دائماً تكون:',
+       opts:['نقية','هجينة','سائدة'], ans:0},
+      {type:'fill',
+       q:'يمثل الحرف الكبير في الوراثة المندلية عامل الصفة _________، بينما الحرف الصغير يمثل عامل الصفة _________.'},
+      {type:'essay', q:'ما الفائدة من استخدام مربع بونيت في حل المسائل الوراثية؟'},
+      {type:'essay', q:'ضرب نبات بزاليا أحمر الأزهار بآخر أبيض الأزهار، فظهرت جميع النباتات الناتجة حمراء. ما هي طرز الأبوين والجيل الأول؟ (استخدم الرموز R, r)'}
+    ]
+  },
+  /* ─── WEEK 2 ─── */
+  {
+    week:2, weekTitle:'الأسبوع الثاني', weekSub:'تهجينات مندل',
+    title:'التهجين الأحادي',
+    questions:[
+      {type:'choice',
+       q:'يسمى قانون مندل الأول بقانون:',
+       opts:['التوزيع الحر','الانعزال','الاحتمالية'], ans:1},
+      {type:'choice',
+       q:'النسبة المظهرية الناتجة من تضريب (هجين × هجين) لصفة واحدة هي:',
+       opts:['1:2:1','3:1','1:1'], ans:1},
+      {type:'fill',
+       q:'التهجين الأحادي هو تهجين وراثي بين فردين يتضمن زوجاً من الصفات ___________ المتضادة.'},
+      {type:'essay', q:'اذكر نص قانون مندل الأول (قانون الانعزال) نصاً.'},
+      {type:'essay', q:'ضرب نبات بزاليا طويل الساق (نقي) بآخر قصير الساق، فما هي الطرز المظهرية والوراثية لأفراد الجيل الأول (F1) والثاني (F2)؟'}
+    ]
+  },
+  {
+    week:2, weekTitle:'الأسبوع الثاني', weekSub:'تهجينات مندل',
+    title:'التهجين العكسي',
+    questions:[
+      {type:'choice',
+       q:'الغرض من التهجين العكسي هو معرفة موقع المورثة إن كانت على كروموسوم جسمي أم:',
+       opts:['جنسي','بلازميد','ميتوكوندريا'], ans:0},
+      {type:'choice',
+       q:'إذا كانت نتائج التهجين العكسي متشابهة في الحالتين، فهذا يعني أن المورثة تقع على كروموسوم:',
+       opts:['جسمي','جنسي','سايتوبلازمي'], ans:0},
+      {type:'fill',
+       q:'يتطلب التهجين العكسي إجراء تضريبين، في الأول نستخدم الفرد ذو الصفة السائدة كـ _________ وفي الثاني نستخدمه كـ _________.'},
+      {type:'essay', q:'عرف (وزاري): التهجين العكسي.'},
+      {type:'essay', q:'صمم تضريباً عكسياً لنبات بزاليا أزهاره محورية (إبطية) مع نبات أزهاره نهائية، موضحاً متى تكون النتائج متشابهة؟'}
+    ]
+  },
+  {
+    week:2, weekTitle:'الأسبوع الثاني', weekSub:'تهجينات مندل',
+    title:'فرضيات مندل',
+    questions:[
+      {type:'choice',
+       q:'من فرضيات مندل: كل صفة وراثية في الفرد يتحكم بها:',
+       opts:['زوج من العوامل','عامل واحد','ثلاثة عوامل'], ans:0},
+      {type:'choice',
+       q:'الفرد الهجين (الذي يمتلك عاملين مختلفين) تظهر عليه صفة العامل:',
+       opts:['المتنحي','السائد','كلاهما معاً'], ans:1},
+      {type:'fill',
+       q:'عند تكوين الأمشاج، تنعزل العوامل الوراثية ___________ عن بعضها وتتوزع على الأمشاج بصورة متساوية.'},
+      {type:'essay', q:'عدد ثلاثاً من فرضيات مندل الأساسية التي استنتجها من تجارب التهجين الأحادي.'},
+      {type:'essay', q:'كيف تفسر فرضية "الانعزال" ظهور الصفة المتنحية في الجيل الثاني بنسبة 25% رغم اختفائها التام في الجيل الأول؟'}
+    ]
+  },
+  {
+    week:2, weekTitle:'الأسبوع الثاني', weekSub:'تهجينات مندل',
+    title:'التضريب الاختباري',
+    questions:[
+      {type:'choice',
+       q:'الهدف من التضريب الاختباري هو معرفة الطراز الوراثي (درجة النقاوة) للصفة:',
+       opts:['المتنحية','السائدة المجهولة','المندلية'], ans:1},
+      {type:'choice',
+       q:'يتم التضريب الاختباري بتزويج الفرد المجهول النقاوة مع فرد ذو صفة:',
+       opts:['سائدة نقية','سائدة هجينة','متنحية'], ans:2},
+      {type:'fill',
+       q:'إذا أعطى التضريب الاختباري أفراداً بنسبة 100% سائدة، فهذا يثبت أن الفرد المجهول كان _________.'},
+      {type:'essay', q:'متى نحكم على أن الفرد السائد هو فرد "هجين" من خلال التضريب الاختباري؟'},
+      {type:'essay', q:'لديك خنزير غيني أسود اللون (صفة سائدة)، كيف تتأكد من نقاوته وراثياً؟ (وضح الاحتمالين مع استخدام الرموز B و b)'}
+    ]
+  },
+  {
+    week:2, weekTitle:'الأسبوع الثاني', weekSub:'تهجينات مندل',
+    title:'التضريب الرجعي',
+    questions:[
+      {type:'choice',
+       q:'التضريب الرجعي يتم بين أفراد الجيل الأول الهجينة مع:',
+       opts:['فرد سائد جديد','أحد الأبوين أو فرد يماثلهما','فرد متنحي دائماً'], ans:1},
+      {type:'choice',
+       q:'يعتبر التضريب الاختباري نوعاً من التضريب الرجعي عندما يتم التضريب مع الأب ذو الصفة:',
+       opts:['السائدة','المتنحية','الهجينة'], ans:1},
+      {type:'fill',
+       q:'لا يمكن إجراء التضريب الرجعي في الحيوانات لتضريب أنثى من الجيل الأول مع أبيها إذا كان الأب _________.'},
+      {type:'essay', q:'عرف (وزاري): التضريب الرجعي.'},
+      {type:'essay', q:'نبات بزاليا طويل الساق هجين (من الجيل الأول)، أُجري له تضريب رجعي. ما هي النتائج المتوقعة مع كلا الأبوين؟ (وضح التضريبين)'}
+    ]
+  },
+  {
+    week:2, weekTitle:'الأسبوع الثاني', weekSub:'تهجينات مندل',
+    title:'تراكمي — مواضيع الأسبوع الثاني',
+    questions:[
+      {type:'choice',
+       q:'ظهور نسبة 1:1 في النسل تظهر دائماً في التضريب:',
+       opts:['الاختباري لفرد هجين','الرجعي لفرد نقي','الذاتي لفرد هجين'], ans:0},
+      {type:'choice',
+       q:'إذا ظهر فرد واحد متنحي من بين مئات الأفراد السائدة، فإن الأبوين السائدين يجب أن يكونا:',
+       opts:['نقيين','أحدهما على الأقل هجين','كلاهما هجين'], ans:2},
+      {type:'fill',
+       q:'التهجين الذي يحدد موقع المورثة (جسمي أم جنسي) هو _________، بينما التهجين الذي يحدد نقاوة الصفة السائدة هو _________.'},
+      {type:'essay', q:'قارن بين التضريب الاختباري والتضريب الرجعي من حيث الهدف والغاية من إجرائهما.'},
+      {type:'essay', q:'ضُرب نبات بزاليا طويل الساق بآخر قصير الساق، فكانت جميع النباتات الناتجة طويلة. أُجري تضريبٌ رجعي لأحد الأفراد الناتجة مع الأب القصير. ما هي الطرز الوراثية والمظهرية الناتجة؟ (حل بالرموز)'}
+    ]
+  },
+  /* ─── WEEK 3 ─── */
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'السيادة غير التامة (نبات حنك السبع)',
+    questions:[
+      {type:'choice',
+       q:'عند تضريب نبات حنك السبع أحمر الأزهار مع أبيض الأزهار، تكون أفراد الجيل الأول:',
+       opts:['حمراء','بيضاء','وردية'], ans:2},
+      {type:'choice',
+       q:'النسبة المظهرية والوراثية في السيادة غير التامة للجيل الثاني هي:',
+       opts:['3:1','1:2:1','9:3:3:1'], ans:1},
+      {type:'fill',
+       q:'في السيادة غير التامة، يكون الطراز المظهري للفرد الهجين ___________ بين الطرازين المظهريين للأبوين النقيين.'},
+      {type:'essay', q:'عرف (وزاري): السيادة غير التامة، مع ذكر الرموز المستخدمة لنبات حنك السبع.'},
+      {type:'essay', q:'ضرب نبات حنك السبع وردي الأزهار بآخر أحمر الأزهار، ما هي الطرز الوراثية والمظهرية للنسل الناتج؟'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'السيادة المشاركة/المواكبة (ماشية قصيرة القرون)',
+    questions:[
+      {type:'choice',
+       q:'ظهور اللون الغباري في الماشية قصيرة القرون هو مثال على:',
+       opts:['سيادة تامة','سيادة غير تامة','سيادة مشاركة'], ans:2},
+      {type:'choice',
+       q:'الأليل المسؤول عن اللون الأحمر في الماشية يرمز له بـ:',
+       opts:['R','CᴿR','CᵂW'], ans:0},
+      {type:'fill',
+       q:'في السيادة المشاركة، يتم التعبير عن ___________ الأليلين معاً في الطراز المظهري للفرد الهجين.'},
+      {type:'essay', q:'علل: ظهور اللون الغباري في بعض سلالات الماشية قصيرة القرون؟'},
+      {type:'essay', q:'جرى تضريب بين ثور غباري اللون وبقرة حمراء، ما هي احتمالات لون الشعر في الأبناء؟ وضح ذلك وراثياً.'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'السيادة المشاركة (فصيلة الدم MN)',
+    questions:[
+      {type:'choice',
+       q:'الأفراد الذين يمتلكون فصيلة الدم M لديهم مستضد من نوع:',
+       opts:['M فقط','N فقط','M و N معاً'], ans:0},
+      {type:'choice',
+       q:'السيادة في نظام الدم MN تعتبر:',
+       opts:['مندلية','غير تامة','مشاركة'], ans:2},
+      {type:'fill',
+       q:'الشخص الذي طرازه الوراثي LᴹLᴺ تكون فصيلة دمه هي ___________.'},
+      {type:'essay', q:'لماذا لا يظهر نظام الدم MN تفاعلات تراص (تكتل) عند نقل الدم مثل نظام ABO؟'},
+      {type:'essay', q:'تزوج رجل فصيلة دمه M من امرأة فصيلة دمها MN، ما هي فصائل الدم المتوقعة لأبنائهم؟'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'النفاذ الجيني والتعبيرية والبيئة',
+    questions:[
+      {type:'choice',
+       q:'المورثة المتنحية لمرض التليف الحوصلي تمتلك نفاذية جينية بنسبة:',
+       opts:['50%','80%','100%'], ans:2},
+      {type:'choice',
+       q:'تأثر طول ووزن الإنسان بعوامل التغذية هو مثال على تأثير:',
+       opts:['البيئة','التعبيرية','التداخل الجيني'], ans:0},
+      {type:'fill',
+       q:'___________ هي قدرة المورثة على إعطاء مدى متغير من الطراز المظهري، بينما ___________ هي احتمالية ظهور الطراز المظهري في الفرد.'},
+      {type:'essay', q:'علل (وزاري): لا تظهر صفة الأصابع الإضافية في جميع الأشخاص الذين يمتلكون الأليل السائد المسؤول عنها؟'},
+      {type:'essay', q:'وضح بمثال كيف يمكن للعوامل البيئية أن تؤثر على تعبير أليل لون الشحم في الأرانب؟'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'تداخل الفعل الجيني (ثمار القرع + عرف الدجاج)',
+    questions:[
+      {type:'choice',
+       q:'نسبة (12 أبيض : 3 أصفر : 1 أخضر) في ثمار القرع ناتجة عن تداخل جيني من نوع:',
+       opts:['التفوق','عدم التفوق','السيادة المشاركة'], ans:0},
+      {type:'choice',
+       q:'الطراز الوراثي للدجاج ذو العرف البازلائي النقي هو:',
+       opts:['RRpp','rrPP','RrPp'], ans:1},
+      {type:'fill',
+       q:'يظهر العرف ___________ في الدجاج عند تضريب سلالتين نقيتين من العرف الوردي مع العرف البازلائي.'},
+      {type:'essay', q:'علل: نسبة (9:3:3:1) المندلية تتغير في لون ثمار القرع وتصبح (12:3:1)؟'},
+      {type:'essay', q:'عند تضريب دجاج زاحف ذو عرف جوزي (Rrpp) مع آخر طبيعي ذو عرف وردي هجين (RrPp)، ما هي نسب الأفراد الناتجة؟'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'الأليلات المميتة (الدجاج الزاحف)',
+    questions:[
+      {type:'choice',
+       q:'الدجاج الزاحف الذي يموت عادة هو الذي يمتلك الطراز الوراثي:',
+       opts:['CᶜCᶜ','CC','Cc'], ans:1},
+      {type:'choice',
+       q:'نسبة الدجاج الزاحف "العيش" إلى الدجاج الطبيعي في نسل أبوين زاحفين هي:',
+       opts:['3:1','1:1','2:1'], ans:2},
+      {type:'fill',
+       q:'يسمى الأليل بـ "المميت" إذا أدى تعبيره إلى ________ الفرد في حالة الطراز الوراثي ________.'},
+      {type:'essay', q:'علل (وزاري): موت أفراد من الدجاج الزاحف عند تضريب زاحف بآخر زاحف؟'},
+      {type:'essay', q:'أُجري تضريب بين ديك زاحف ودجاجة طبيعية، ما هي نسبة الأفراد التي ستموت؟ ولماذا؟'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'الأليلات المميتة (الفئران الصفراء وذبابة الفاكهة)',
+    questions:[
+      {type:'choice',
+       q:'الطراز الوراثي للفأر الأصفر الميت هو:',
+       opts:['YY','Yy','yy'], ans:0},
+      {type:'choice',
+       q:'أليل انعدام الأجنحة في ذبابة الفاكهة هو أليل:',
+       opts:['سائد مميت','متنحي مميت','سائد غير مميت'], ans:1},
+      {type:'fill',
+       q:'في الفئران، الأليل (Y) يكون ________ من حيث لون الشعر، و ________ من حيث تأثيره على حياة الفرد.'},
+      {type:'essay', q:'قارن بين الأليل المميت السائد (كما في الفئران) والأليل المميت المتنحي (كما في فقر الدم المنجلي).'},
+      {type:'essay', q:'تزاوج فأران أصفران، ظهر في النسل فئران رمادية. فسر ذلك وراثياً مع ذكر نسبة الموتى.'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'الأليلات المتعددة (نظام ABO)',
+    questions:[
+      {type:'choice',
+       q:'أليل فصيلة الدم O (وهو i) يعتبر:',
+       opts:['سائداً على A','متنحياً لـ A و B','مشارك مع A'], ans:1},
+      {type:'choice',
+       q:'المستضدات المسؤولة عن تحديد فصائل الدم توجد في:',
+       opts:['الغشاء البلازمي للكرية الحمراء','نواة الخلية','السايتوبلازم'], ans:0},
+      {type:'fill',
+       q:'الفرد ذو فصيلة الدم AB يمتلك الطراز الوراثي ______، وهو مثال على السيادة ______.'},
+      {type:'essay', q:'علل: لا يمكن نقل دم من شخص فصيلته A إلى شخص فصيلته B؟'},
+      {type:'essay', q:'امرأة فصيلة دمها A (والدها O) تزوجت رجل فصيلة دمه B (والدته O)، ما هي الطرز الوراثية والمظهرية لأبنائهم؟'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'مستضدات Rh + مسائل العامل الريسي',
+    questions:[
+      {type:'choice',
+       q:'نسبة الأشخاص الذين يمتلكون المستضد Rh في دمهم (+Rh) في المجتمع البشري تبلغ حوالي:',
+       opts:['50%','85%','15%'], ans:1},
+      {type:'choice',
+       q:'يورث العامل الريسي من خلال ثلاثة أزواج من الأليلات، لكن الأليل الأهم هو:',
+       opts:['d','D','O'], ans:1},
+      {type:'fill',
+       q:'يحدث مرض اليرقان للجنين عندما يكون الأب ________ والأم ________ والجنين _________.'},
+      {type:'essay', q:'متى تكون حياة الجنين في خطر وراثي حقيقي فيما يخص العامل الريسي؟ اشرح الحالة.'},
+      {type:'essay', q:'رجل فصيلة دمه O+ (هجين لـ Rh) تزوج امرأة فصيلة دمها B- (والدها -O)، ما هي احتمالات ظهور أطفال مصابين باليرقان؟'}
+    ]
+  },
+  {
+    week:3, weekTitle:'الأسبوع الثالث', weekSub:'اللامندلية المتقدمة',
+    title:'سلسلة أليلات لون الفراء في الأرانب',
+    questions:[
+      {type:'choice',
+       q:'أليل اللون الرمادي (C) يسود على:',
+       opts:['الشنشال فقط','الهيمالايا فقط','جميع الأليلات الأخرى'], ans:2},
+      {type:'choice',
+       q:'الطراز الوراثي (cʰcʰ) يعطي أرنباً بلون:',
+       opts:['هيمالايا','شنشال','أمهق'], ans:0},
+      {type:'fill',
+       q:'السيادة بين أليلات لون الفراء في الأرانب هي سيادة ______، حيث يسود الشنشال على ______.'},
+      {type:'essay', q:'رتب أليلات لون الفراء في الأرانب تنازلياً من الأكثر سيادة إلى الأقل سيادة.'},
+      {type:'essay', q:'أرنب شنشال هجين للأمهق ضرب بأنثى رمادية هجينة للهيمالايا، استخرج الطرز المظهرية والوراثية للجيل الناتج.'}
+    ]
+  },
+  /* ─── WEEK 4 ─── */
+  {
+    week:4, weekTitle:'الأسبوع الرابع', weekSub:'الوراثة البشرية والجزيئية',
+    title:'الوراثة البشرية وسجل النسب',
+    questions:[
+      {type:'choice',
+       q:'في سجل النسب، يرمز للأنثى بالرمز:',
+       opts:['مربع','دائرة','معين'], ans:1},
+      {type:'choice',
+       q:'المربع المظلل (الأسود) في سجل النسب يشير إلى ذكر:',
+       opts:['سليم','مصاب بالصفة','مجهول'], ans:1},
+      {type:'fill',
+       q:'___________ هو مخطط يوضح تاريخ عائلة معينة لتتبع انتقال صفة وراثية عبر الأجيال.'},
+      {type:'essay', q:'اذكر ثلاث صعوبات تواجه الباحثين عند دراسة الوراثة في الإنسان؟'},
+      {type:'essay', q:'ارسم سجل نسب بسيط لعائلة يظهر فيها مرض متنحي (مثل المهق) لدى طفل واحد من أبوين سليمين.'}
+    ]
+  },
+  {
+    week:4, weekTitle:'الأسبوع الرابع', weekSub:'الوراثة البشرية والجزيئية',
+    title:'كروموسومات الإنسان والأمراض الوراثية',
+    questions:[
+      {type:'choice',
+       q:'الزوج الكروموسومي رقم 21 في الإنسان، إذا وجد منه ثلاث نسخ بدلاً من اثنتين، يسبب متلازمة:',
+       opts:['داون','كلاينفلتر','تيرنر'], ans:0},
+      {type:'choice',
+       q:'عدد الكروموسومات الكلي في المصاب بمتلازمة "داون" هو:',
+       opts:['45','46','47'], ans:2},
+      {type:'fill',
+       q:'تسمى الكروموسومات من رقم 1 إلى 22 بالكروموسومات ______، بينما الزوج 23 يسمى بالكروموسومات ______.'},
+      {type:'essay', q:'قارن بين متلازمة داون ومتلازمة تيرنر من حيث العدد الكروموسومي والجنس المتأثر؟'},
+      {type:'essay', q:'ما هو الفرق الجوهري بين الخلل الكروموسومي العددي والخلل الكروموسومي التركيبي؟'}
+    ]
+  },
+  {
+    week:4, weekTitle:'الأسبوع الرابع', weekSub:'الوراثة البشرية والجزيئية',
+    title:'الأساس الجزيئي للوراثة (DNA)',
+    questions:[
+      {type:'choice',
+       q:'القاعدة النيتروجينية التي لا توجد في جزيء DNA هي:',
+       opts:['الأدنين','الثايمين','اليوراسيل'], ans:2},
+      {type:'choice',
+       q:'تتكون النيوكليوتيدة في DNA من سكر:',
+       opts:['رايبوزي','رايبوزي منقوص الأكسجين','غلوكوز'], ans:1},
+      {type:'fill',
+       q:'ترتبط القواعد النيتروجينية في شريطي DNA بواسطة أواصر ___________.'},
+      {type:'essay', q:'عدد أنواع القواعد النيتروجينية البيورينية والبريميدينية الموجودة في DNA؟'},
+      {type:'essay', q:'قارن بين DNA و RNA من حيث القواعد النيتروجينية ونوع السكر.'}
+    ]
+  },
+  /* ─── WEEK 5 ─── */
+  {
+    week:5, weekTitle:'الأسبوع الخامس', weekSub:'تكملة الجزيئية والارتباط',
+    title:'تركيب وتضاعف DNA',
+    questions:[
+      {type:'choice',
+       q:'اقترح نموذج الشريط المزدوج للـ DNA العالمان:',
+       opts:['مندل','واتسون وكريك','موركان'], ans:1},
+      {type:'choice',
+       q:'ترتبط قاعدة (A) مع (T) بآصرتين، بينما ترتبط (G) مع (C) بـ:',
+       opts:['آصرة واحدة','آصرتين','3 أواصر'], ans:2},
+      {type:'fill',
+       q:'يسمى تضاعف DNA بالتضاعف ___________ لأن كل جزيء ناتج يحتوي شريطاً قديماً وآخر جديداً.'},
+      {type:'essay', q:'اشرح باختصار آلية تضاعف DNA داخل الخلية.'},
+      {type:'essay', q:'إذا كانت نسبة الثايمين (T) في جزيء DNA هي 20%، فما هي نسبة السايتوسين (C)؟'}
+    ]
+  },
+  {
+    week:5, weekTitle:'الأسبوع الخامس', weekSub:'تكملة الجزيئية والارتباط',
+    title:'الطفرات الوراثية',
+    questions:[
+      {type:'choice',
+       q:'الطفرة التي تتضمن استبدال قاعدة نيتروجينية بواحدة أخرى تسمى طفرة:',
+       opts:['نقطية','إزاحة','كروموسومية'], ans:0},
+      {type:'choice',
+       q:'من العوامل الفيزيائية المسببة للطفرات:',
+       opts:['غاز الخردل','الأشعة السينية','الفورمالديهايد'], ans:1},
+      {type:'fill',
+       q:'الطفرة الوراثية هي تغيير مفاجئ في ___________ يؤدي إلى تغيير في الطراز المظهري.'},
+      {type:'essay', q:'ما الفرق بين الطفرة التلقائية والطفرة المستحدثة؟'},
+      {type:'essay', q:'علل: لا تورث جميع الطفرات إلى الأجيال القادمة؟'}
+    ]
+  },
+  {
+    week:5, weekTitle:'الأسبوع الخامس', weekSub:'تكملة الجزيئية والارتباط',
+    title:'الوراثة والجنس (الصفات المرتبطة بالجنس)',
+    questions:[
+      {type:'choice',
+       q:'مرض عمى الألوان يورث كصفة مرتبطة بالكروموسوم:',
+       opts:['X','Y','الجسمي 21'], ans:0},
+      {type:'choice',
+       q:'الذكر المصاب بنزف الدم الوراثي يورث المورثة إلى:',
+       opts:['جميع أبنائه الذكور','جميع بناته','جميع نسله'], ans:1},
+      {type:'fill',
+       q:'الأنثى التي تمتلك أليلاً واحداً للمرض المرتبط بالجنس تسمى ___________ وتكون سليمة مظهرياً.'},
+      {type:'essay', q:'علل: تظهر الصفات المرتبطة بالجنس في الذكور أكثر من الإناث؟'},
+      {type:'essay', q:'تزوج رجل سليم من امرأة سليمة والدها مصاب بنزف الدم الوراثي، ما هي احتمالات ظهور المرض في أبنائهم الذكور والإناث؟'}
+    ]
+  },
+  {
+    week:5, weekTitle:'الأسبوع الخامس', weekSub:'تكملة الجزيئية والارتباط',
+    title:'امتحان تراكمي نهائي شامل',
+    questions:[
+      {type:'choice',
+       q:'النسبة المظهرية 2 زاحف : 1 طبيعي تظهر عند تضريب:',
+       opts:['زاحف × زاحف','زاحف × طبيعي','طبيعي × طبيعي'], ans:0},
+      {type:'choice',
+       q:'عدد أليلات لون الفراء في الأرانب هو:',
+       opts:['2','3','4'], ans:2},
+      {type:'fill',
+       q:'في الوراثة الكمية، تتأثر الصفة بـ ___________ المورثات السائدة المتراكمة.'},
+      {type:'essay', q:'قارن بين السيادة التامة والسيادة غير التامة من حيث النسبة المظهرية للجيل الثاني.'},
+      {type:'essay', q:'حل مسألة تربط بين فصائل الدم ABO ونظام Rh: رجل A+ هجين للصفتين تزوج امرأة O-.'}
+    ]
+  }
+];
+
+// ══════════════════════════════════════════════════════
+//   STATE
+// ══════════════════════════════════════════════════════
+let curExam = null, curQ = 0, student = '', correct = 0, answered = false;
+
+// ══════════════════════════════════════════════════════
+//   BUILD HOME
+// ══════════════════════════════════════════════════════
+function buildHome(){
+  const wrap = document.getElementById('weeks-wrapper');
+  const byWeek = {};
+  EXAMS.forEach((e,i) => {
+    if(!byWeek[e.week]) byWeek[e.week] = { title:e.weekTitle, sub:e.weekSub, list:[] };
+    byWeek[e.week].list.push({title:e.title, idx:i, n:e.questions.length});
+  });
+  let html = '';
+  for(const w in byWeek){
+    const d = byWeek[w];
+    html += `
+    <div class="week-block">
+      <div class="week-block-header">
+        <span class="week-num-badge">الأسبوع ${w}</span>
+        <span class="week-block-title">${d.title}</span>
+        <span class="week-block-sub">${d.sub}</span>
+      </div>
+      <table class="exam-table">`;
+    d.list.forEach(e => {
+      html += `<tr onclick="openReg(${e.idx})">
+        <td>${e.title}</td>
+        <td><span class="exam-q-count">${e.n} أسئلة</span></td>
+        <td><button class="btn-take" onclick="event.stopPropagation();openReg(${e.idx})">ابدأ الامتحان</button></td>
+      </tr>`;
+    });
+    html += `</table></div>`;
+  }
+  wrap.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════
+//   NAVIGATION
+// ══════════════════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function showHome(){ showPage('page-home'); }
+
+function openReg(idx){
+  curExam = idx;
+  document.getElementById('reg-title').textContent = EXAMS[idx].title;
+  document.getElementById('reg-sub').textContent   = EXAMS[idx].weekTitle + ' — ' + EXAMS[idx].weekSub;
+  document.getElementById('name-input').value = '';
+  showPage('page-register');
+  setTimeout(()=>document.getElementById('name-input').focus(), 200);
+}
+
+function startExam(){
+  const v = document.getElementById('name-input').value.trim();
+  if(v.split(/\s+/).filter(Boolean).length < 3){
+    document.getElementById('name-input').style.borderColor='#fc8181';
+    document.getElementById('name-input').focus();
+    return;
+  }
+  document.getElementById('name-input').style.borderColor='';
+  student  = v;
+  curQ     = 0;
+  correct  = 0;
+  answered = false;
+  document.getElementById('et-title').textContent   = EXAMS[curExam].title;
+  document.getElementById('et-student').textContent = student;
+  renderQ();
+  showPage('page-exam');
+}
+
+// ══════════════════════════════════════════════════════
+//   RENDER QUESTION
+// ══════════════════════════════════════════════════════
+function renderQ(){
+  const exam = EXAMS[curExam];
+  const q    = exam.questions[curQ];
+  const tot  = exam.questions.length;
+  answered   = false;
+
+  // progress
+  const pct = Math.round((curQ/tot)*100);
+  document.getElementById('prog-fill').style.width  = pct+'%';
+  document.getElementById('prog-label').textContent = `${curQ+1} / ${tot}`;
+
+  document.getElementById('btn-check').style.display = 'inline-flex';
+  document.getElementById('btn-check').disabled      = false;
+  document.getElementById('btn-next').style.display  = 'none';
+
+  const typeMap = { choice:['اختيار من متعدد','tag-choice'], fill:['أكمل الفراغ','tag-fill'], essay:['سؤال مقالي','tag-essay'] };
+  const [tlabel, tclass] = typeMap[q.type];
+  const letters = ['أ','ب','ج','د'];
+
+  let body = '';
+  if(q.type==='choice'){
+    body = `<div class="options-list">${q.opts.map((o,i)=>
+      `<button class="opt-btn" data-i="${i}" onclick="pick(this)">
+        <span class="opt-letter">${letters[i]}</span>${o}
+      </button>`).join('')}</div>`;
+  } else if(q.type==='fill'){
+    const blanks = (q.q.match(/___________/g)||[]).length || 1;
+    body = Array.from({length:blanks},(_,i)=>
+      `<input class="fill-input" id="fi${i}" placeholder="الإجابة ${blanks>1?i+1:''}" autocomplete="off">`
+    ).join('');
+  } else {
+    body = `<textarea class="essay-area" id="essay-ans" placeholder="اكتب إجابتك هنا..."></textarea>`;
+  }
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-num">${curQ+1}</span>
+        <span class="q-type-tag ${tclass}">${tlabel}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      ${body}
+      <div class="feedback" id="fb"></div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//   INTERACTIONS
+// ══════════════════════════════════════════════════════
+function pick(btn){
+  if(answered) return;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function checkAnswer(){
+  if(answered) return;
+  const exam = EXAMS[curExam];
+  const q    = exam.questions[curQ];
+  const fb   = document.getElementById('fb');
+  const isLast = curQ === exam.questions.length-1;
+
+  if(q.type==='choice'){
+    const sel = document.querySelector('.opt-btn.selected');
+    if(!sel){ document.querySelector('.opt-btn').style.outline='2px solid #fc8181'; return; }
+    const chosen = parseInt(sel.dataset.i);
+    document.querySelectorAll('.opt-btn').forEach((b,i)=>{
+      b.disabled=true;
+      if(i===q.ans) b.classList.add('correct');
+      else if(i===chosen) b.classList.add('wrong');
+    });
+    if(chosen===q.ans){
+      correct++;
+      fb.className='feedback fb-correct show';
+      fb.innerHTML='<div class="feedback-title">✓ إجابة صحيحة</div>';
+    } else {
+      fb.className='feedback fb-wrong show';
+      const letters=['أ','ب','ج'];
+      fb.innerHTML=`<div class="feedback-title">✗ إجابة خاطئة</div>الإجابة الصحيحة: <strong>${letters[q.ans]}. ${q.opts[q.ans]}</strong>`;
+    }
+  }
+  else if(q.type==='fill'){
+    const blanks = document.querySelectorAll('.fill-input');
+    let empty = false;
+    blanks.forEach(inp=>{ if(!inp.value.trim()) empty=true; inp.disabled=true; });
+    if(empty && blanks.length){ /* still proceed */ }
+    correct++; // fill/essay always counted as attempted
+    fb.className='feedback fb-info show';
+    fb.innerHTML=`<div class="feedback-title">راجع إجابتك</div>تأكد من مطابقة إجابتك مع الكتاب المدرسي والملزمة.`;
+  }
+  else {
+    const ta = document.getElementById('essay-ans');
+    if(!ta.value.trim()){ ta.style.borderColor='#fc8181'; return; }
+    ta.disabled=true;
+    correct++;
+    fb.className='feedback fb-info show';
+    fb.innerHTML=`<div class="feedback-title">راجع إجابتك</div>قارن إجابتك مع الإجابة النموذجية في الملزمة.`;
+  }
+
+  answered=true;
+  document.getElementById('btn-check').style.display='none';
+  document.getElementById('btn-next').style.display='inline-flex';
+  document.getElementById('btn-next').textContent = isLast ? 'عرض النتيجة' : 'السؤال التالي';
+}
+
+function nextQ(){
+  const exam = EXAMS[curExam];
+  if(curQ < exam.questions.length-1){ curQ++; renderQ(); }
+  else showResult();
+}
+
+// ══════════════════════════════════════════════════════
+//   RESULT
+// ══════════════════════════════════════════════════════
+function showResult(){
+  const tot = EXAMS[curExam].questions.length;
+  const pct = Math.round((correct/tot)*100);
+  document.getElementById('prog-fill').style.width='100%';
+  document.getElementById('prog-label').textContent=`${tot} / ${tot}`;
+
+  document.getElementById('score-ring').style.setProperty('--pct', pct);
+  document.getElementById('score-pct').textContent = pct+'%';
+
+  let grade='', msg='';
+  if(pct>=90){grade='ممتاز';   msg='أداء رائع — أنت متقن للمادة بشكل كبير.';}
+  else if(pct>=75){grade='جيد جداً'; msg='أداء متميز — مع بعض المراجعة ستصل للامتياز.';}
+  else if(pct>=60){grade='جيد';      msg='أداء مقبول — راجع الأسئلة التي أخطأت فيها.';}
+  else if(pct>=50){grade='مقبول';    msg='يحتاج إلى مراجعة إضافية للمفاهيم الأساسية.';}
+  else            {grade='دون المستوى'; msg='راجع الملزمة والكتاب المدرسي ثم أعد الامتحان.';}
+
+  document.getElementById('res-grade').textContent = grade;
+  document.getElementById('res-name').textContent  = student;
+  document.getElementById('res-msg').textContent   = msg;
+  document.getElementById('r-c').textContent = correct;
+  document.getElementById('r-w').textContent = tot-correct;
+  document.getElementById('r-t').textContent = tot;
+
+  showPage('page-result');
+}
+
+// INIT
+buildHome();
+</script>
+</body>
+</html>
